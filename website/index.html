@@ -142,19 +142,30 @@
       background: linear-gradient(135deg, var(--primary), var(--primary-deep));
       box-shadow: 0 8px 24px rgba(91, 140, 255, 0.35);
     }
+    /* 用 @property 注册一个可动画的角度变量；conic-gradient 的起始角随之旋转，
+       但 ::before 元素本身不动，避免环绕的圆角和按钮错位 */
+    @property --angle {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: false;
+    }
     .cta.primary::before {
       content: '';
       position: absolute;
       inset: -2px;
       border-radius: 20px;
       padding: 2px;
-      background: conic-gradient(from 0deg, #FFD068, #C773FF, #9B6BFF, #FFB05A, #FFD068);
+      background: conic-gradient(
+        from var(--angle),
+        #FFD068, #C773FF, #9B6BFF, #FFB05A, #FFD068
+      );
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       -webkit-mask-composite: xor;
               mask-composite: exclude;
       opacity: 0;
       transition: opacity .25s ease;
-      animation: spin 4s linear infinite;
+      animation: hue-spin 4s linear infinite;
+      pointer-events: none;
     }
     .cta.primary:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(91, 140, 255, 0.45); }
     .cta.primary:hover::before { opacity: 1; }
@@ -165,9 +176,15 @@
       border: 1px solid var(--glass-stroke);
     }
     .cta.ghost:hover { transform: translateY(-2px); border-color: var(--primary); color: var(--primary); }
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+    @keyframes hue-spin {
+      to { --angle: 360deg; }
+    }
+    /* @property 不支持的浏览器（旧 Firefox 等）回退：直接显示一个静态多色环 */
+    @supports not (background: conic-gradient(from var(--angle), red, blue)) {
+      .cta.primary::before {
+        background: conic-gradient(from 0deg, #FFD068, #C773FF, #9B6BFF, #FFB05A, #FFD068);
+        animation: none;
+      }
     }
 
     /* —— 区段 —— */
