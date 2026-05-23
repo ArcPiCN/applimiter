@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>戒刷止刷 · 保持专注，守住时间</title>
+  <meta name="description" content="戒刷止刷是一款本地运行的安卓应用，按页面停留时长自动返回桌面，帮助戒断短视频依赖。圆弧派（ARCPI）出品。" />
+  <meta name="theme-color" content="#5B8CFF" />
+  <meta property="og:title" content="戒刷止刷 · AppLimiter" />
+  <meta property="og:description" content="按页面停留时长自动返回桌面，帮助戒断短视频依赖。" />
+  <meta property="og:url" content="https://applimiter.arcpi.cn" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%235B8CFF'/%3E%3Cstop offset='100%25' stop-color='%233A6BE6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Cpath d='M20 32 L28 40 L44 24' stroke='white' stroke-width='5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --primary: #5B8CFF;
+      --primary-deep: #3A6BE6;
+      --fog-white: #F4F8FF;
+      --silver-blue: #DCE8FF;
+      --accent: #8FDCC8;
+      --deep-ink: #2E3A59;
+      --ink-soft: #6A7A99;
+      --glass-fill: rgba(255, 255, 255, 0.72);
+      --glass-stroke: rgba(91, 140, 255, 0.20);
+      --shadow: 0 8px 24px rgba(91, 140, 255, 0.12), 0 2px 6px rgba(46, 58, 89, 0.06);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--deep-ink);
+      background: var(--fog-white);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.6;
+    }
+
+    /* —— 液态玻璃背景：缓慢游走的 4 个色斑 —— */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background:
+        radial-gradient(circle at 20% 20%, #B8D0FF 0%, transparent 50%),
+        radial-gradient(circle at 80% 30%, #D6E5FA 0%, transparent 55%),
+        radial-gradient(circle at 30% 80%, #C9F0E4 0%, transparent 50%),
+        radial-gradient(circle at 75% 80%, #DCE8FF 0%, transparent 50%),
+        linear-gradient(180deg, #E6F0FF 0%, #F4F8FF 100%);
+      filter: blur(28px);
+      animation: drift 28s ease-in-out infinite alternate;
+    }
+    @keyframes drift {
+      0%   { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(-2%, 2%) scale(1.05); }
+    }
+
+    /* —— 容器 —— */
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* —— 顶栏 —— */
+    .nav {
+      position: sticky;
+      top: 12px;
+      z-index: 10;
+      margin: 16px 20px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--glass-fill);
+      backdrop-filter: blur(14px) saturate(140%);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      border: 1px solid var(--glass-stroke);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+    .nav .logo {
+      width: 32px; height: 32px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-deep));
+      display: grid; place-items: center;
+      color: white; font-weight: 700;
+      font-size: 14px;
+    }
+    .nav .brand { font-weight: 600; font-size: 16px; }
+    .nav .links { margin-left: auto; display: flex; gap: 18px; }
+    .nav .links a {
+      color: var(--ink-soft);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color .18s ease;
+    }
+    .nav .links a:hover { color: var(--primary); }
+
+    /* —— Hero —— */
+    .hero {
+      padding: 80px 0 60px;
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: clamp(36px, 6vw, 64px);
+      margin: 0 0 16px;
+      letter-spacing: -1px;
+      font-weight: 800;
+      background: linear-gradient(120deg, var(--deep-ink) 0%, var(--primary-deep) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .hero .tag {
+      font-size: 18px;
+      color: var(--ink-soft);
+      max-width: 580px;
+      margin: 0 auto 36px;
+    }
+
+    /* —— 紫金液态玻璃 CTA —— */
+    .cta-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .cta {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 26px;
+      border-radius: 18px;
+      font-weight: 600;
+      font-size: 15px;
+      text-decoration: none;
+      transition: transform .18s ease, box-shadow .25s ease;
+      cursor: pointer;
+      border: none;
+    }
+    .cta.primary {
+      color: white;
+      background: linear-gradient(135deg, var(--primary), var(--primary-deep));
+      box-shadow: 0 8px 24px rgba(91, 140, 255, 0.35);
+    }
+    .cta.primary::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 20px;
+      padding: 2px;
+      background: conic-gradient(from 0deg, #FFD068, #C773FF, #9B6BFF, #FFB05A, #FFD068);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+              mask-composite: exclude;
+      opacity: 0;
+      transition: opacity .25s ease;
+      animation: spin 4s linear infinite;
+    }
+    .cta.primary:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(91, 140, 255, 0.45); }
+    .cta.primary:hover::before { opacity: 1; }
+    .cta.ghost {
+      color: var(--deep-ink);
+      background: var(--glass-fill);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--glass-stroke);
+    }
+    .cta.ghost:hover { transform: translateY(-2px); border-color: var(--primary); color: var(--primary); }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* —— 区段 —— */
+    section { padding: 60px 0; }
+    h2 {
+      font-size: clamp(26px, 3.5vw, 36px);
+      margin: 0 0 8px;
+      font-weight: 700;
+      letter-spacing: -.5px;
+    }
+    .section-sub {
+      color: var(--ink-soft);
+      margin: 0 0 36px;
+    }
+
+    /* —— 玻璃卡 —— */
+    .grid { display: grid; gap: 16px; }
+    .grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 720px) {
+      .grid.cols-3, .grid.cols-2 { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--glass-fill);
+      backdrop-filter: blur(14px) saturate(140%);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      border: 1px solid var(--glass-stroke);
+      border-radius: 22px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 40px rgba(91, 140, 255, 0.18);
+    }
+    .card .icon {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-deep));
+      display: grid; place-items: center;
+      margin-bottom: 14px;
+    }
+    .card h3 { margin: 0 0 6px; font-size: 17px; font-weight: 600; }
+    .card p { margin: 0; color: var(--ink-soft); font-size: 14px; }
+
+    /* —— 流程步骤 —— */
+    .steps { counter-reset: step; }
+    .step { display: flex; gap: 18px; padding: 16px 0; align-items: flex-start; }
+    .step::before {
+      counter-increment: step;
+      content: counter(step);
+      flex: 0 0 36px;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-deep));
+      color: white;
+      display: grid; place-items: center;
+      font-weight: 700;
+    }
+    .step h4 { margin: 4px 0 4px; font-size: 16px; }
+    .step p { margin: 0; color: var(--ink-soft); font-size: 14px; }
+
+    /* —— FAQ —— */
+    details {
+      background: var(--glass-fill);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--glass-stroke);
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+    }
+    details summary {
+      cursor: pointer;
+      font-weight: 600;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    details summary::after { content: '+'; font-size: 22px; color: var(--ink-soft); transition: transform .2s ease; }
+    details[open] summary::after { transform: rotate(45deg); }
+    details p { color: var(--ink-soft); margin: 12px 0 0; }
+
+    /* —— 页脚 —— */
+    footer {
+      text-align: center;
+      padding: 50px 20px 30px;
+      color: var(--ink-soft);
+      font-size: 13px;
+      border-top: 1px solid var(--glass-stroke);
+      margin-top: 40px;
+    }
+    footer a { color: var(--primary); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<nav class="nav wrap-nav">
+  <div class="logo">戒</div>
+  <div class="brand">戒刷止刷</div>
+  <div class="links">
+    <a href="#features">特性</a>
+    <a href="#how">使用</a>
+    <a href="#faq">FAQ</a>
+    <a href="https://github.com/ArcPiCN/applimiter" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- Hero -->
+  <header class="hero">
+    <h1>保持专注 · 守住时间</h1>
+    <p class="tag">
+      按页面停留时长自动返回桌面，帮助戒断短视频依赖。<br />
+      数据全部本地存储，开源、纯净、克制。
+    </p>
+    <div class="cta-row">
+      <a class="cta primary" href="https://github.com/ArcPiCN/applimiter/releases" target="_blank" rel="noopener">
+        下载 APK
+      </a>
+      <a class="cta ghost" href="https://github.com/ArcPiCN/applimiter" target="_blank" rel="noopener">
+        查看源码
+      </a>
+    </div>
+  </header>
+
+  <!-- 特性 -->
+  <section id="features">
+    <h2>它能做什么</h2>
+    <p class="section-sub">用最少的干预，把时间还给你。</p>
+    <div class="grid cols-3">
+      <div class="card">
+        <div class="icon">⏱</div>
+        <h3>页面级精确限制</h3>
+        <p>按 Activity 维度配置最长停留秒数，时间到自动返回桌面。</p>
+      </div>
+      <div class="card">
+        <div class="icon">✨</div>
+        <h3>悬浮窗一键添加</h3>
+        <p>在任意应用任意页面，点一下就能把当前页面加入限制规则。</p>
+      </div>
+      <div class="card">
+        <div class="icon">📁</div>
+        <h3>规则导入导出</h3>
+        <p>JSON 格式，支持本地文件、URL 导入；按应用分组管理。</p>
+      </div>
+      <div class="card">
+        <div class="icon">🎯</div>
+        <h3>批量管理</h3>
+        <p>长按多选，一键批量启用、禁用、删除规则。</p>
+      </div>
+      <div class="card">
+        <div class="icon">🔒</div>
+        <h3>本地优先</h3>
+        <p>数据不出设备，无云端同步、无追踪、无广告。</p>
+      </div>
+      <div class="card">
+        <div class="icon">💎</div>
+        <h3>液态玻璃 UI</h3>
+        <p>雾感冰川蓝配色，磨砂玻璃卡片，跨屏一致的克制设计。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 使用步骤 -->
+  <section id="how">
+    <h2>三步开始</h2>
+    <p class="section-sub">不需要 root，普通安卓 8.0 及以上设备即可。</p>
+    <div class="steps card" style="padding: 8px 28px;">
+      <div class="step">
+        <div>
+          <h4>授权无障碍服务</h4>
+          <p>系统设置 → 无障碍 → 戒刷止刷页面监控 → 开启。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <h4>授权悬浮窗（可选但推荐）</h4>
+          <p>用于在任意应用快速添加规则。从应用首页一键跳转授权页面。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <h4>添加或导入规则</h4>
+          <p>使用内置推荐规则、悬浮窗一键添加，或从 JSON 文件导入。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <h2>常见问题</h2>
+    <p class="section-sub">如果有未列出的问题，欢迎到 GitHub 提 Issue。</p>
+
+    <details>
+      <summary>它会上传我的数据吗？</summary>
+      <p>不会。所有规则和运行数据都保存在本机 Room 数据库里，应用没有联网上报逻辑。源码完全开放，可自查。</p>
+    </details>
+    <details>
+      <summary>为什么需要无障碍权限？</summary>
+      <p>需要监听前台 Activity 名才能识别"现在是不是某个被限制的页面"。不会读取页面内容、不会模拟点击。</p>
+    </details>
+    <details>
+      <summary>时间到了如何强制退出？</summary>
+      <p>触发 GLOBAL_ACTION_HOME 直接返回桌面，比 BACK 更可靠，不会被应用拦截。</p>
+    </details>
+    <details>
+      <summary>国产机后台被杀怎么办？</summary>
+      <p>请到系统的"后台管理 / 自启动"里允许戒刷止刷常驻，无障碍服务才能一直工作。</p>
+    </details>
+    <details>
+      <summary>能贡献规则吗？</summary>
+      <p>当然。fork 仓库后修改 <code>app/src/main/res/raw/default_rules.json</code> 提 PR 即可。</p>
+    </details>
+  </section>
+
+</div>
+
+<footer>
+  <p>
+    <a href="https://github.com/ArcPiCN/applimiter" target="_blank" rel="noopener">GitHub</a>
+    ·
+    <a href="mailto:im@arcpi.cn">im@arcpi.cn</a>
+    ·
+    <a href="https://github.com/ArcPiCN/applimiter/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>
+  </p>
+  <p>
+    © 2026 <a href="https://arcpi.cn" target="_blank" rel="noopener">圆弧派（ARCPI）</a> · 保持专注，守住时间
+  </p>
+</footer>
+
+</body>
+</html>

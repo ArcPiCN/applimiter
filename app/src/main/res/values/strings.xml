@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">戒刷止刷</string>
+    <string name="accessibility_service_label">戒刷止刷页面监控</string>
+    <string name="accessibility_service_description">监控你打开的页面，按你设置的规则自动退出短视频页面，帮助戒断短视频依赖。仅在本地处理，不会上传任何信息。</string>
+    <string name="accessibility_service_summary">按规则自动退出短视频页面</string>
+</resources>

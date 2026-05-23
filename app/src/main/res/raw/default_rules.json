@@ -1,0 +1,37 @@
+{
+  "schema": "applimiter.rules",
+  "version": 2,
+  "exportedAt": 1779558036961,
+  "apps": [
+    {
+      "packageName": "com.ss.android.ugc.aweme",
+      "appName": "抖音",
+      "pages": [
+        {
+          "activityName": "com.ss.android.ugc.aweme.main.MainActivity",
+          "pageLabel": "MainActivity",
+          "maxStaySeconds": 5,
+          "isEnabled": true
+        },
+        {
+          "activityName": "com.ss.android.ugc.aweme.homepage.tab.ui.CustomRelativeLayout",
+          "pageLabel": "CustomRelativeLayout",
+          "maxStaySeconds": 3,
+          "isEnabled": true
+        }
+      ]
+    },
+    {
+      "packageName": "com.tencent.mm",
+      "appName": "微信",
+      "pages": [
+        {
+          "activityName": "com.tencent.mm.plugin.finder.ui.FinderHomeAffinityUI",
+          "pageLabel": "视频号",
+          "maxStaySeconds": 0,
+          "isEnabled": true
+        }
+      ]
+    }
+  ]
+}
